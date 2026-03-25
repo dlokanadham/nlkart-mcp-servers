@@ -32,17 +32,17 @@ def get_connection():
 
 @server.tool()
 def get_pending_products() -> str:
-    """List all products awaiting approval (Status = 'Pending')."""
+    """List all products awaiting approval (ApprovalStatus = 'Pending')."""
     try:
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT p.ProductId, p.Name, p.Price, p.Stock, c.CategoryName,
+            SELECT p.ProductId, p.Name, p.Price, p.Stock, c.Name AS CategoryName,
                    u.Username AS DealerName, p.CreatedAt
             FROM Products p
             JOIN Categories c ON p.CategoryId = c.CategoryId
             JOIN Users u ON p.DealerId = u.UserId
-            WHERE p.Status = 'Pending'
+            WHERE p.ApprovalStatus = 'Pending'
             ORDER BY p.CreatedAt DESC
         """)
         columns = [desc[0] for desc in cursor.description]
@@ -61,7 +61,7 @@ def approve_product(product_id: int, notes: str = "") -> str:
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "UPDATE Products SET Status = 'Approved' WHERE ProductId = ? AND Status = 'Pending'",
+            "UPDATE Products SET ApprovalStatus = 'Approved' WHERE ProductId = ? AND ApprovalStatus = 'Pending'",
             product_id
         )
         affected = cursor.rowcount
@@ -81,7 +81,7 @@ def reject_product(product_id: int, reason: str) -> str:
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "UPDATE Products SET Status = 'Rejected' WHERE ProductId = ? AND Status = 'Pending'",
+            "UPDATE Products SET ApprovalStatus = 'Rejected' WHERE ProductId = ? AND ApprovalStatus = 'Pending'",
             product_id
         )
         affected = cursor.rowcount

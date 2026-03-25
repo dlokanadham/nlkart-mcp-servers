@@ -80,10 +80,11 @@ def login_as(role: str) -> str:
     )
 
     if result.get("status") == 200:
+        cred_string = user["username"] + ":" + user["password"]
         result["credentials"] = {
             "username": user["username"],
             "role": role,
-            "authHeader": f"Basic {base64.b64encode(f'{user[\"username\"]}:{user[\"password\"]}'.encode()).decode()}"
+            "authHeader": f"Basic {base64.b64encode(cred_string.encode()).decode()}"
         }
 
     return json.dumps(result, default=str)
